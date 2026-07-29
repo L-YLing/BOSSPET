@@ -18,11 +18,10 @@
    > **⚠️ 注意**：必须与用户提供的照片风格保持绝对一致（例如：当用户提供真人照片时，生成的人物三视图必须是真实的真人质感，**严禁**转化为像素风、Q版或任何其他艺术风格）。
 2. **替换原有动效帧图**：提取生成的人物三视图中的特征，利用图像编辑或重绘能力，将项目 assets/ 目录下的现有 PNG 序列帧（或雪碧图）中的原版人物替换为该用户的人物。
    > **⚠️ 注意**：在替换人物时，必须严格保持原版的所有肢体动作、动作幅度和动作一致性（不能改变动作本身，只替换皮套）。需要处理的 5 个状态图集为：
-   - 待机 (idle)
-   - 工作打字 (working)
-   - 递交文件 (handing_file)
-   - 准备挨打 (spank_ready)
-   - 抽打受击 (spanking)
+   - 待机：ssets/idle_frames/ 目录下的 PNG
+   - 工作打字：ssets/working_frames/ 目录下的 PNG
+   - 递交文件：ssets/handing_file_frames/ 目录下的 PNG
+   - 挨打受击：ssets/spanking_frames/ 目录下的 PNG
 3. **文件覆盖**：将替换好人物的图像按照原文件的命名和分辨率，原样保存并覆盖到项目目录的 assets/ 对应位置中。
 
 ## 步骤 2：联动 Agent 的修改与协议注入
@@ -55,3 +54,4 @@
    pyinstaller --clean --noconsole --onefile --noupx --name BossPet --add-data "assets;assets" main.py
 3. 检查打包的 .exe 产物，确认无误后将生成的新专属桌宠提供给用户。
 ``
+
