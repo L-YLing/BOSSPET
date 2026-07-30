@@ -207,9 +207,9 @@ class Pet(QWidget):
         self.bubble.hide()
         
         if state == "idle":
-            self.bubble.show_message("叶总你好", self.x(), self.y())
+            self.bubble.show_message("老板好！", self.x(), self.y())
         elif state == "spanking":
-            self.bubble.show_message("叶总我错了", self.x(), self.y())
+            self.bubble.show_message("别打啦！", self.x(), self.y())
         elif state == "working":
             self.bubble.show_message("叶总，文件马上就好", self.x(), self.y())
         elif state == "handing_file":
@@ -353,11 +353,7 @@ class Pet(QWidget):
         self.set_state("spank_ready")
         self.proximity_timer.start(50) 
         try:
-            if getattr(sys, 'frozen', False):
-                base_dir = os.path.dirname(sys.executable)
-            else:
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-            whip_path = os.path.join(base_dir, "MouseWhip.exe")
+            whip_path = resource_path("MouseWhip.exe")
             
             if os.path.exists(whip_path):
                 self.mouse_whip_process = subprocess.Popen(whip_path)
