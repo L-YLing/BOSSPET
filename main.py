@@ -12,7 +12,7 @@ from PyQt5.QtGui import QPixmap, QCursor, QPainter, QPainterPath, QColor, QPen
 from log_monitor import LogMonitorThread
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
+    """获取资源文件的绝对路径（开发环境和 PyInstaller 打包后均适用）"""
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -20,7 +20,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # ==========================================
-# 闂佸憡鏌ｉ崝搴ㄥ极妤ｅ啯鐓€鐎广儱娲ㄩ弸?(闁荤姴娲弨閬嶆偋閹绢喖绠叉い鏃囧亹閺変粙姊婚崟顐ｅ櫣闁搞劌绻樺畷鍫曟倷椤掆偓閸撲即鏌涢幇顒€鎮侀柟渚垮姂瀵?
+# 精灵（宠物）动作配置
 # ==========================================
 SPRITE_CONFIG = {
     "idle": {
@@ -46,13 +46,14 @@ SPRITE_CONFIG = {
 }
 
 class Bubble(QWidget):
+    """气泡对话框（带小尾巴）"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.ToolTip | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(15, 15, 15, 25) # Bottom margin for tail
+        layout.setContentsMargins(15, 15, 15, 25)  # 底部留出尾巴空间
         
         self.label = QLabel("", self)
         self.label.setStyleSheet("""
@@ -67,6 +68,7 @@ class Bubble(QWidget):
         layout.addWidget(self.label)
         
     def paintEvent(self, event):
+        """绘制圆角矩形气泡 + 底部三角形尾巴"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
@@ -94,10 +96,11 @@ class Bubble(QWidget):
         painter.drawPath(path)
         
     def show_message(self, text, pos_x, pos_y):
+        """在宠物上方显示气泡消息"""
         self.label.setText(text)
         self.label.adjustSize()
         self.adjustSize()
-        # Position slightly above the pet
+        # 显示在宠物上方 10 像素
         self.move(pos_x, pos_y - self.height() - 10)
         self.show()
 
@@ -112,17 +115,18 @@ class Pet(QWidget):
         self.current_state = "idle"
         self.current_frame = 0
         
-        # 闂佸憡鏌ｉ崝搴ㄥ极閸撗勫闁斥晛鍟ˇ褔鏌?        
+        # 动画定时器
         self.anim_timer = QTimer(self)
         self.anim_timer.timeout.connect(self.update_frame)
 
+        # 鼠标接近检测定时器（用于抽打模式）
         self.proximity_timer = QTimer(self)
         self.proximity_timer.timeout.connect(self.check_mouse_proximity)
         
-        # 濠殿喗蓱濮婂綊宕?
+        # 气泡提示
         self.bubble = Bubble()
         
-        # 婵炲瓨鍤庨崐鎾惰姳娴煎瓨鍋愰柤鍝ヮ暯閸?        
+        # 拖拽相关
         self.dragging = False
         self.offset = QPoint()
         self.is_spank_mode = False
@@ -131,7 +135,7 @@ class Pet(QWidget):
         self.is_handing_file_paused = False
         self.mouse_whip_process = None
         
-        # 闂佸搫鍟ㄩ崕杈╂崲閺冨牊鍎庨柟瀵稿仜娴?
+        # 日志监听线程（监控外部状态变化）
         self.monitor = LogMonitorThread()
         self.monitor.state_changed.connect(self.on_state_changed)
         self.monitor.start()
@@ -150,7 +154,7 @@ class Pet(QWidget):
         self.move(100, screen.height() - 400)
 
     def load_sprites(self):
-        """"""
+        """加载所有动作序列帧（支持单张精灵表或目录下多张图片）"""
         for state, config in SPRITE_CONFIG.items():
             frame_list = []
             
@@ -172,6 +176,7 @@ class Pet(QWidget):
                         frame = frame.scaledToHeight(380, Qt.SmoothTransformation)
                     frame_list.append(frame)
             else:
+                # 单张精灵表切分
                 path = config["path"]
                 if not os.path.exists(path):
                     print(f"图片不存在: {path}")
@@ -189,12 +194,13 @@ class Pet(QWidget):
                     if state == "working":
                         frame = frame.scaledToHeight(280, Qt.SmoothTransformation)
                     else:
-                        frame = frame.scaledToHeight(380, Qt.SmoothTransformation) # 婵烇絽娲︾换鍐偓鍨⒐缁傚秹鎼归悷鎵虫寘濠殿噯绲鹃弻褏娆?
+                        frame = frame.scaledToHeight(380, Qt.SmoothTransformation)
                         frame_list.append(frame)
                         
             self.frames[state] = frame_list
 
     def set_state(self, state):
+        """切换宠物动作状态，并显示对应的气泡提示"""
         if state not in self.frames or not self.frames[state]:
             return
             
@@ -221,13 +227,14 @@ class Pet(QWidget):
         self.update_image()
 
     def update_frame(self):
+        """更新动画帧（逐帧播放）"""
         frames = self.frames.get(self.current_state, [])
         if not frames:
             return
             
         self.current_frame += 1
         
-        # 濠㈣泛瀚幃濠囨偋鐟欏嫮鏆曢柣妯垮煐閳ь兛鑳剁划銊╁级閻斿皷鍋撻弰蹇曞竼
+        # 根据状态处理最后一帧的定格或循环
         if self.current_frame >= len(frames):
             if self.current_state == "handing_file":
                 self.current_frame = len(frames) - 1
@@ -241,13 +248,15 @@ class Pet(QWidget):
                 return
             elif self.current_state == "idle":
                 self.current_frame = len(frames) - 1
-                self.anim_timer.stop() # 闂佺顑嗙划灞斤耿椤忓牆瀚夐柍褜鍓熷畷銉︽償濠靛牜浼囬柣?                return
+                self.anim_timer.stop()  # 待机状态停在第最后一帧（由鼠标移入重新触发）
+                return
             else:
-                self.current_frame = 0 # 閻庣敻鍋婃禍鐐虹嵁閸℃稑绠绘い鎾跺枑閺?
+                self.current_frame = 0  # 其他状态循环播放
                 
         self.update_image()
 
     def update_image(self):
+        """更新显示的图片"""
         frames = self.frames.get(self.current_state, [])
         if frames and self.current_frame < len(frames):
             pixmap = frames[self.current_frame]
@@ -256,6 +265,7 @@ class Pet(QWidget):
             self.resize(pixmap.size())
 
     def on_state_changed(self, log_state):
+        """日志监听回调，根据外部状态切换动画"""
         if self.is_spank_mode:
             return
         if log_state == "handing_file" and not getattr(self, 'is_handing_file_paused', False):
@@ -264,13 +274,14 @@ class Pet(QWidget):
             self.set_state("working")
 
     def enterEvent(self, event):
+        """鼠标移入时重新触发待机动画（让宠物活起来）"""
         if not self.is_spank_mode and self.current_state == "idle":
-            # 鼠标移入时重新播放待机动画
             self.current_frame = 0
             self.anim_timer.start(1000 // SPRITE_CONFIG["idle"]["fps"])
         super().enterEvent(event)
             
     def check_mouse_proximity(self):
+        """抽打模式下检测鼠标是否靠近宠物（触发抽打动画）"""
         if not getattr(self, "is_spank_mode", False):
             return
             
@@ -290,12 +301,14 @@ class Pet(QWidget):
         self.mouse_in_proximity = is_in_proximity
 
     def start_spanking_animation(self):
+        """延迟启动抽打动画（配合准备动作）"""
         if self.is_spank_mode and getattr(self, "is_spanking_playing", False):
             self.set_state("spanking")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             if getattr(self, "is_handing_file_paused", False):
+                # 文件交付完成后点击左键隐藏气泡并打开反重力彩蛋
                 self.bubble.hide()
                 self.set_state("idle")
                 self.activate_antigravity()
@@ -311,6 +324,7 @@ class Pet(QWidget):
             event.accept()
 
     def activate_antigravity(self):
+        """彩蛋：打开反重力（Python 之禅）"""
         import webbrowser
         try:
             webbrowser.open("antigravity://")
@@ -328,6 +342,7 @@ class Pet(QWidget):
             self.dragging = False
 
     def contextMenuEvent(self, event):
+        """右键菜单"""
         menu = QMenu(self)
         
         if not self.is_spank_mode:
@@ -347,6 +362,7 @@ class Pet(QWidget):
         menu.exec_(QCursor.pos())
 
     def enable_spank_mode(self):
+        """开启抽打模式：启动鼠标轨迹鞭子特效和接近检测"""
         self.is_spank_mode = True
         self.is_spanking_playing = False
         self.mouse_in_proximity = False
@@ -363,6 +379,7 @@ class Pet(QWidget):
             print("Failed to start MouseWhip:", e)
         
     def disable_spank_mode(self):
+        """关闭抽打模式：停止检测并结束鞭子进程"""
         self.is_spank_mode = False
         self.is_spanking_playing = False
         self.proximity_timer.stop()
@@ -375,7 +392,7 @@ class Pet(QWidget):
                 pass
             self.mouse_whip_process = None
         
-        # Async taskkill as fallback to avoid blocking the UI thread
+        # 异步强杀（防止进程残留）
         subprocess.Popen("taskkill /f /im MouseWhip.exe >nul 2>&1", shell=True)
 
 if __name__ == '__main__':
