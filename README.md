@@ -25,22 +25,22 @@
    cd boss_pet
    `
 2. 安装依赖：
-   `ash
+   `bash
    pip install -r requirements.txt
    `
 3. 运行项目：
-   `ash
+   `bash
    python main.py
    `
 
 ## 📦 如何打包为 exe
 
 1. 确保安装了 PyInstaller：
-   `ash
+   `bash
    pip install pyinstaller
    `
 2. 执行打包命令：
-   `ash
+   `bash
    pyinstaller --clean --noconsole --onefile --noupx --name BossPet --add-data "assets;assets" main.py
    `
    打包完成后，在 dist 目录下会生成独立的可执行文件。
@@ -52,6 +52,7 @@
 
 本项目不仅可以作为常规桌宠使用，还支持通过一段专属提示词，交由大语言模型（如小红书 RedSkill、豆包电脑版、Workbuddy、Codex 等）实现“**形象克隆**”与“**应用联动修改**”的一键定制。
 
-如果你希望改变桌宠的形象（提供真人照片生成配套三视图与动效），或者希望修改桌宠联动唤醒的 Agent 软件，可以直接将本仓库下载，并将 edskill_prompt.md 中的提示词和您的照片发送给您的开发 Agent！
+如果你希望改变桌宠的形象（提供真人照片生成配套三视图与动效），或者希望修改桌宠联动唤醒的 Agent 软件，可以直接将本仓库下载，并将 
+edskill_prompt.md 中的提示词和您的照片发送给您的开发 Agent！
 
 [👉 点击查看完整定制提示词 (redskill_prompt.md)](redskill_prompt.md)
